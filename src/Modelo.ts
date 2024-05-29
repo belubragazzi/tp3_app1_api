@@ -65,7 +65,7 @@ async function actualizarTemperatura(idCiudad: number, temperatura: number) {
     const query = `UPDATE Ciudad SET temperatura=${temperatura} WHERE id=${idCiudad}`;
     await db.run(query);
 }
-async function searchItems(query: string): Promise<Promise<Producto[]>> {
+/* async function searchItems(query: string): Promise<Promise<Producto[]>> {
     try {
         const accessToken = process.env.ACCESS_TOKEN;
         
@@ -78,7 +78,7 @@ async function searchItems(query: string): Promise<Promise<Producto[]>> {
         console.error('Error en searchItems:', error);
         throw error;
     }
-  }
+  } */
   
 
 
