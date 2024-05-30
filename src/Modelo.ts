@@ -36,8 +36,14 @@ export async function consultarListadoProductos(): Promise<Kiosco> {
     return { productos: productos };
 }
 
-
 // Agrega uno nuevo Producto a la base de datos
+export async function agregarProducto(nombre: string, precio: number): Promise<void> {
+    const db = await abrirConexion();
+
+    const query = `INSERT INTO Producto (nombre, precio) VALUES ('${nombre}', ${precio})`;
+    await db.run(query);
+}
+/* // Agrega uno nuevo Producto a la base de datos
  export async function agregarProducto(nombre: string, precio: number): Promise<Producto> {
     const db = await abrirConexion();
 
@@ -50,7 +56,7 @@ export async function consultarListadoProductos(): Promise<Kiosco> {
         throw new Error("Esto nunca deberia pasar!");
 
     return producto;
-}
+} */
 // Borra un Producto de la base de datos
 export async function borrarProducto(nombre: string): Promise<void> {
     const db = await abrirConexion();
