@@ -1,16 +1,14 @@
 import sqlite3 from 'sqlite3'
 import { open } from 'sqlite'
+import fetch from 'node-fetch';
+//import nodemailer from 'nodemailer';
+//const nodemailer = require("nodemailer");
 
+export const PORT = process.env.PORT || 3000;
 export interface Producto {
-    nombre: string,
+    id:number,
+    meli_id: string,
     precio: number
-}
-export interface Kiosco {
-    productos: Producto[]
-}
-export interface Reporte {
-    fecha: Date,
-    producto: Producto
 }
 
 async function abrirConexion() {
@@ -20,99 +18,74 @@ async function abrirConexion() {
     })
 }
 
-// Arma un Listado que contiene todas las ciudades en la base de datos
-/* export async function consultarListado(): Promise<Listado> {
-    const db = await abrirConexion();
-
-    const ciudades: Ciudad[] = await db.all<Ciudad[]>('SELECT * FROM Ciudad');
-    return { ciudades: ciudades };
-}
- */
-export async function consultarListadoProductos(): Promise<Kiosco> {
+export async function consultarListadoProductos(): Promise<Producto[]> {
     const db = await abrirConexion();
 
     const productos: Producto[] = await db.all<Producto[]>('SELECT * FROM Producto');
     console.log(productos);
-    return { productos: productos };
+    return  productos;
 }
 
 // Agrega uno nuevo Producto a la base de datos
-export async function agregarProducto(nombre: string, precio: number): Promise<void> {
+export async function agregarProducto(meli_id: string, precio: number): Promise<void> {
     const db = await abrirConexion();
 
-    const query = `INSERT INTO Producto (nombre, precio) VALUES ('${nombre}', ${precio})`;
+    const query = `INSERT INTO Producto (meli_id, precio) VALUES ('${meli_id}', ${precio})`;
     await db.run(query);
 }
-/* // Agrega uno nuevo Producto a la base de datos
- export async function agregarProducto(nombre: string, precio: number): Promise<Producto> {
-    const db = await abrirConexion();
 
-    const query = `INSERT INTO Producto (nombre, precio) VALUES ('${nombre}', ${precio})`;
-    await db.run(query);
-
-
-    const producto = await db.get<Producto>(`SELECT * FROM Producto WHERE nombre=${nombre}`);
-    if (producto == undefined)
-        throw new Error("Esto nunca deberia pasar!");
-
-    return producto;
-} */
 // Borra un Producto de la base de datos
-export async function borrarProducto(nombre: string): Promise<void> {
+export async function borrarProducto(meli_id: string): Promise<void> {
     const db = await abrirConexion();
 
-    const query = `DELETE FROM Producto WHERE nombre='${nombre}'`;
+    const query = `DELETE FROM Producto WHERE meli_id='${meli_id}'`;
     await db.run(query);
 } 
-// actualiza el precio actual
-async function actualizarTemperatura(idCiudad: number, temperatura: number) {
-    const db = await abrirConexion();
 
-    const query = `UPDATE Ciudad SET temperatura=${temperatura} WHERE id=${idCiudad}`;
-    await db.run(query);
-}
-/* async function searchItems(query: string): Promise<Promise<Producto[]>> {
+//BUSCAR PRECIO
+export async function buscarPrecioEnMeli(meli_id: string): Promise<number> {
     try {
-        const accessToken = process.env.ACCESS_TOKEN;
-        
-        const apiUrl = `https://api.mercadolibre.com/sites/MLA/search?q=${query}&access_token=${accessToken}`;
-        
+        const apiUrl = `http://localhost:${PORT}/meli/${meli_id}`;
+
         const response = await fetch(apiUrl);
-        const data = await response.json();
-        return data.results;
+        const data: any = await response.json();
+        console.log(`me llego de la falsa API:`, data);
+
+        return data.precio;
     } catch (error) {
-        console.error('Error en searchItems:', error);
+        console.error('Error en buscarPrecioEnMeli:', error);
         throw error;
     }
-  } */
-  
+}
 
-
-
-
-
-
-
-// Proceso que se ejecuta cada una hora y chequea si hay que mandar una alerta
-/* export async function verificarAlertas(): Promise<Alerta[]> {
+/* // actualiza el precio actual
+async function actualizarTemperatura(meli_id: number, price: number) {
     const db = await abrirConexion();
 
-    const ciudades: Ciudad[] = await db.all<Ciudad[]>('SELECT * FROM Ciudad');
+    const query = `UPDATE Producto SET price=${price} WHERE id=${meli_id}`;
+    await db.run(query);
+}
+ */
+// Proceso que se ejecuta cada una hora y chequea si hay que mandar una alerta
+/*  export async function verificarAlertas(): Promise<Alerta[]> {
+    const db = await abrirConexion();
 
-    // Itero todas las ciudades y si me devolvio alguna alerta la agrego a la lista de retorno
+    const productos: Producto[] = await db.all<Producto[]>('SELECT * FROM Producto');
+
+    // Itero todas las productos y si me devolvio alguna alerta la agrego a la lista de retorno
     var alertas: Alerta[] = [];
 
-    for (let i = 0; i < ciudades.length; i++) {
-        const ciudad = ciudades[i];
-        var alerta = await verificarAlertasParaCiudad(ciudad);
+    for (let i = 0; i < productos.length; i++) {
+        const producto = productos[i];
+        var alerta = await verificarAlertasParaProducto(producto);
         if (alerta != null)
             alertas.push(alerta);
     }
 
     return alertas;
-}
- */
-/* async function verificarAlertasParaCiudad(ciudad: Ciudad): Promise<Alerta | null> {
+} */
+ 
+/*  async function verificarAlertasParaProducto(producto: Producto): Promise<Alerta | null> {
     // Busco la latitud y longitud de esta ciudad. Estaria bueno guardar esta info en la tabla de Ciudades porque no cambia en el tiempo.
     const response1 = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${ciudad.nombre}&count=1&language=en&format=json`
@@ -146,28 +119,30 @@ async function actualizarTemperatura(idCiudad: number, temperatura: number) {
     } else {
         return null
     }
-} */
+}  */
 
+/* const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.EMAILPASS
+    }
+  });
+export async function enviarCorreo(producto: Producto[], meli_id: string, price: number) {
+    try {//const productos = producto.productos_carrito.map(item => ${item.cantidad} x ${item.producto.nombre}).join(', ');
+        const producto = "producto en cuestion";
+        const mailOptions = {
+            from: 'alertasproductos@gmail.com',
+            to: 'alertasproductos@gmail.com',
+            subject: '¡Nuevo aumento!',
+            text:  'Hubo un nuevo aumento del' + producto
+        };
 
-
-
-
-    
-/* export function compareItemsPerDay (precioDeUno: Producto, precioDelOtro: Producto): Producto {
-    //comparo el precio del día anterior que fue registrado con el precio que me llega de la base de 
-    return kiosco;
-}
-    
-export function compareItemsPerWeek (precioDeUno: Producto, precioDelOtro: Producto): Reporte {
-    //comparo el precio del día anterior que fue registrado con el precio que me llega de la base de datos
-    return reporte;
-}
-    
-    
-export function putItemsInDataBase (productos: Producto) {
-    //piso la base de datos con la nueva información de los items del kiosco
-}
-    
-export function showItems (itemsParaMostrar: Producto) {
-    //aprovecho la info de la base de datos para actualizar el "panel de control"del Kiosquero
-} */
+        // Envía el correo
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Correo enviado: %s', info.messageId);
+    } catch (error) {
+        console.error('Error enviando el correo:', error);
+        throw error;
+  }
+}  */

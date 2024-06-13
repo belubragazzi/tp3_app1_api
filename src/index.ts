@@ -1,12 +1,11 @@
 //index es el controlador
 import express, { Express, Request, Response, response, NextFunction} from "express";
 import dotenv from "dotenv";
-import { consultarListadoProductos, borrarProducto, agregarProducto } from "./Modelo";
+import { consultarListadoProductos, borrarProducto, agregarProducto,  buscarPrecioEnMeli, PORT } from "./Modelo";
 
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT || 3000;
 
 function errorHandler(
     error: Error, req: Request, res: Response, next: NextFunction
@@ -18,7 +17,7 @@ function errorHandler(
 
 app.use(express.json())
 
-app.get("/v1/listado", async (req: Request, res: Response, next: NextFunction) => {
+app.get("/v1/producto", async (req: Request, res: Response, next: NextFunction) => {
     try {    
         const listado = await consultarListadoProductos();
         res.send(listado);
@@ -29,27 +28,69 @@ app.get("/v1/listado", async (req: Request, res: Response, next: NextFunction) =
  
 
 // index.ts
-app.post("/v1/producto/agregar", async (req: Request, res: Response, next: NextFunction) => {
-   try {
-        const nombre = req.body.nombre;//no me acuerdo q es req
-        const precio = parseFloat(req.body.precio);
-        await agregarProducto(nombre, precio);
+app.post("/v1/producto", async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const meli_id = req.body.meli_id;
+        const precio = await buscarPrecioEnMeli(meli_id);
+
+        await agregarProducto(meli_id, precio);
         res.send("OK");
     } catch (error) {
         next(error)
     }
 });
 
-app.post("/v1/producto/borrar", async (req: Request, res: Response, next: NextFunction) => {
-    try {   
-        const nombre = req.body.nombre;
-        await borrarProducto(nombre);
-        res.send("OK"); 
+app.delete("/v1/producto", async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const meli_id = req.body.meli_id;
+        await borrarProducto(meli_id);
+        res.send("OK");
+    } catch (error) {
+        next(error)
+    }
+
+});
+let precios = new Map();
+precios.set('ID1', 1000);
+precios.set('ID2', 2500);
+precios.set('ID3', 5000);
+
+const random = (min: number, max: number): number => Math.random() * (max - min) + min;
+
+app.get("/meli/:meli_id", async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const meli_id = req.params.meli_id;
+
+        /*  const ret = {
+            precio: Math.floor(Math.random() * 5000 + 1000)
+         }; */
+
+        const ret = {
+            precio: Math.floor(precios.get(meli_id) * random(0.85, 1.15))
+        };
+
+        res.send(ret);
     } catch (error) {
         next(error)
     }
     
 });
+
+
+// Para que lo llame el cron
+app.get("/v1/actualizarPrecios", async (req: Request, res: Response) => {
+// - traer productos que tenemos en la BD
+// - `foreach` producto
+//     - traer nuevos precios de producto con la API de ML
+//     - comparar el nuevo precio con el que esta en la BD
+//     - `if` precio cambio
+//         - `if` precio cambio mas del 10%
+//             - envio notificacion
+//         - actualizo la BD
+});
+
+
+
 
 /*
 app.post("/verificarAlertas", async (req: Request, res: Response) => {
@@ -63,6 +104,6 @@ app.post("/verificarAlertas", async (req: Request, res: Response) => {
 //siguiente a los controladores
 app.use(errorHandler)
 
-app.listen(port, () => {
-    console.log(`[server]: Servidor iniciado en http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`[server]: Servidor iniciado en http://localhost:${PORT}`);
 }); 

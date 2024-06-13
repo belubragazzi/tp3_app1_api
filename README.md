@@ -105,10 +105,12 @@ Vamos a utilizar el método de obtener el AT desde el "Body".
 Para ello vamos a necesitar la siguiente magia:
 
 https://auth.mercadolibre.com.ar/authorization?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI
+https://auth.mercadolibre.com.ar/authorization?response_type=code&client_id=5633518982702410&redirect_uri=https://3.138.109.11
 
 En la `*magia*` vamos a reemplazar el parámetro que dice `CLIENT_ID` con el *App ID* en tu App del devcenter de Meli y `REDIRECT_URI` con el *Redirect URI* que pusiste en la App de MeLi cuando la configuraste.
 
 Una vez tengas eso, te va a llevar a una URL que, si te fijas en el campo donde van las URL en el navegador, te va a haber tirado una URL distinta a la que ingresaste. Ahí vamos a obtener el `CODE`. El CODE es todo lo que está desde TG (inclusive) hasta el final. (si hay algún "&", marca el límite del CODE).
+TG-665e79ec1673800001272cf4-292963064
 
 Cuando lo tengamos, vamos a ir al *ThunderClient* desde el `VisualStudioCode` y vamos a seleccionar la opción de "`importar`". En la versión actual del Visual/Thunder se encuentra en el desplegable estilo hamburguesa al lado del buscador del ThunderClient. Lo vas a encontrar, vos confiá. A mi me llevó *1 hora*.
 
