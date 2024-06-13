@@ -1,12 +1,12 @@
 import sqlite3 from 'sqlite3'
 import { open } from 'sqlite'
-import fetch from 'node-fetch';
+// import { fetch } from 'node-fetch';
 //import nodemailer from 'nodemailer';
 //const nodemailer = require("nodemailer");
 
 export const PORT = process.env.PORT || 3000;
 export interface Producto {
-    id:number,
+    id: number,
     meli_id: string,
     precio: number
 }
@@ -23,7 +23,7 @@ export async function consultarListadoProductos(): Promise<Producto[]> {
 
     const productos: Producto[] = await db.all<Producto[]>('SELECT * FROM Producto');
     console.log(productos);
-    return  productos;
+    return productos;
 }
 
 // Agrega uno nuevo Producto a la base de datos
@@ -40,7 +40,7 @@ export async function borrarProducto(meli_id: string): Promise<void> {
 
     const query = `DELETE FROM Producto WHERE meli_id='${meli_id}'`;
     await db.run(query);
-} 
+}
 
 //BUSCAR PRECIO
 export async function buscarPrecioEnMeli(meli_id: string): Promise<number> {
@@ -84,7 +84,7 @@ async function actualizarTemperatura(meli_id: number, price: number) {
 
     return alertas;
 } */
- 
+
 /*  async function verificarAlertasParaProducto(producto: Producto): Promise<Alerta | null> {
     // Busco la latitud y longitud de esta ciudad. Estaria bueno guardar esta info en la tabla de Ciudades porque no cambia en el tiempo.
     const response1 = await fetch(
