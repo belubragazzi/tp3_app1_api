@@ -2,6 +2,7 @@
 import express, { Express, Request, Response, response, NextFunction} from "express";
 import dotenv from "dotenv";
 import { consultarListadoProductos, borrarProducto, agregarProducto,  buscarPrecioEnMeli, PORT } from "./Modelo";
+import { falsaMeli } from "./meli";
 
 dotenv.config();
 
@@ -50,31 +51,8 @@ app.delete("/v1/producto", async (req: Request, res: Response, next: NextFunctio
     }
 
 });
-let precios = new Map();
-precios.set('ID1', 1000);
-precios.set('ID2', 2500);
-precios.set('ID3', 5000);
 
-const random = (min: number, max: number): number => Math.random() * (max - min) + min;
-
-app.get("/meli/:meli_id", async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const meli_id = req.params.meli_id;
-
-        /*  const ret = {
-            precio: Math.floor(Math.random() * 5000 + 1000)
-         }; */
-
-        const ret = {
-            precio: Math.floor(precios.get(meli_id) * random(0.85, 1.15))
-        };
-
-        res.send(ret);
-    } catch (error) {
-        next(error)
-    }
-    
-});
+app.get("/meli/:meli_id/:fecha?", falsaMeli);
 
 
 // Para que lo llame el cron
