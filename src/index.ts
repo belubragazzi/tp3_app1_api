@@ -1,7 +1,7 @@
 //index es el controlador
 import express, { Express, Request, Response, response, NextFunction} from "express";
 import dotenv from "dotenv";
-import { consultarListadoProductos, borrarProducto, agregarProducto,  buscarPrecioEnMeli, PORT } from "./Modelo";
+import { consultarListadoProductos, borrarProducto, agregarProducto,  buscarPrecioEnMeli, PORT, enviarCorreo, actualizarProducto } from "./Modelo";
 
 dotenv.config();
 
@@ -61,12 +61,8 @@ app.get("/meli/:meli_id", async (req: Request, res: Response, next: NextFunction
     try {
         const meli_id = req.params.meli_id;
 
-        /*  const ret = {
-            precio: Math.floor(Math.random() * 5000 + 1000)
-         }; */
-
         const ret = {
-            precio: Math.floor(precios.get(meli_id) * random(0.85, 1.15))
+            precio: Math.floor(precios.get(meli_id) * random(0.80, 1.2))
         };
 
         res.send(ret);
@@ -78,15 +74,31 @@ app.get("/meli/:meli_id", async (req: Request, res: Response, next: NextFunction
 
 
 // Para que lo llame el cron
-app.get("/v1/actualizarPrecios", async (req: Request, res: Response) => {
-// - traer productos que tenemos en la BD
-// - `foreach` producto
-//     - traer nuevos precios de producto con la API de ML
-//     - comparar el nuevo precio con el que esta en la BD
-//     - `if` precio cambio
-//         - `if` precio cambio mas del 10%
-//             - envio notificacion
-//         - actualizo la BD
+app.get("/v1/actualizarPrecios", async (req: Request, res: Response, next: NextFunction) => {
+    try {    // - traer productos que tenemos en la BD
+        const listado = await consultarListadoProductos();
+        // - `foreach` producto
+        for (let i = 0; i < listado.length; i++) {
+            const producto = listado[i];
+            const nuevoPrecio = await buscarPrecioEnMeli(producto.meli_id)
+            if (nuevoPrecio != producto.precio) {
+                producto.precio = nuevoPrecio; 
+                await actualizarProducto(producto.meli_id, nuevoPrecio);    
+                console.log('el pecio se cambio')
+
+                if (nuevoPrecio >= producto.precio*1.1 || nuevoPrecio <= producto.precio*0.9 ) {
+                
+                    await enviarCorreo(producto.meli_id, producto.precio);
+                } else {console.log('no hace falta mandar mail')}
+            } else {
+                console.log('el pecio se mantiene')
+            }
+        }
+        res.send("Actualización de precios completada");
+
+    } catch (error) {
+        next(error)
+    }
 });
 
 
