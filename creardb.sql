@@ -1,7 +1,7 @@
 CREATE TABLE Producto (
-	id INTEGER PRIMARY KEY,
-    meli_id TEXT NOT NULL UNIQUE,
-   	precio REAL NOT NULL
+	meli_id TEXT NOT NULL UNIQUE,
+   	precio REAL NOT NULL,
+	nombre TEXT NOT NULL 
 );
 
 -- Insertar datos en la tabla Producto

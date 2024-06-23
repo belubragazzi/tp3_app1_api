@@ -28,7 +28,7 @@
     "express": "^4.19.2",
     "mersenne-twister": "^1.1.0",
     "node-fetch": "^3.3.2",
-    "nodemailer": "^6.9.13",
+    "nodemailer": "^6.9.14",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   }
