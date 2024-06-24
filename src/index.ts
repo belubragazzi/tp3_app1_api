@@ -3,6 +3,7 @@ import express, { Express, Request, Response, response, NextFunction} from "expr
 import dotenv from "dotenv";
 import { consultarListadoProductos, borrarProducto, agregarProducto,  buscarPrecioEnMeli, PORT, enviarCorreo, actualizarProducto } from "./Modelo";
 import { falsaMeli } from "./meli";
+import cors from "cors";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ function errorHandler(
     response.status(500).json({ mensaje: error.message})
 }
 
+app.use(cors());
 app.use(express.json())
 
 app.get("/v1/producto", async (req: Request, res: Response, next: NextFunction) => {
